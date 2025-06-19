@@ -111,15 +111,21 @@
       font-size: 1.1em;
       text-align: center;
       padding: 10px;
-      transition: transform 0.5s ease, background 0.3s;
+      transition: transform 0.6s;
+      backface-visibility: hidden;
     }
-    .envelope:hover {
-      transform: scale(1.05);
-      background: #fff5fa;
+    .envelope.opened {
+      transform: rotateX(180deg);
+      transition: transform 1s ease-in-out;
+      background: #fff0f5;
     }
     .message {
       display: none;
-      animation: fadeIn 1s ease-in-out;
+      opacity: 0;
+    }
+    .message.show {
+      display: block;
+      animation: fadeSlideUp 1s ease-in-out forwards;
       padding: 20px;
       background: #fff0f5;
       border-radius: 20px;
@@ -127,13 +133,13 @@
       text-align: center;
       font-size: 1.2em;
     }
-    audio {
-      display: none;
+    @keyframes fadeSlideUp {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
-  <audio id="envelopeSound" src="https://cdn.pixabay.com/download/audio/2022/10/31/audio_6c9f3d6731.mp3?filename=magical-forest-ambient-transition-121863.mp3"></audio>
   <div id="quiz">
     <div class="quiz-step active" data-step="1">
       <div class="question">1. O que aquece seu coração de verdade? ✨</div>
@@ -171,7 +177,6 @@
     const steps = document.querySelectorAll('.quiz-step');
     const envelopeContainer = document.getElementById('envelopeContainer');
     const messageText = document.getElementById('messageText');
-    const envelopeSound = document.getElementById('envelopeSound');
     let currentStep = 0;
     let answers = [];
 
@@ -181,13 +186,15 @@
       abraco_riso_leve: "Cassi, o jeito que você transforma o simples em alegria é mágico. Seu riso tem algo que bagunça o meu mundo — no melhor dos sentidos. 💫",
       carinho_presenca: "Cassi, tem algo no seu jeito de estar que faz tudo ficar mais calmo. Você é abraço mesmo de longe. 🤍",
       lembrada_vista: "Cassi, lembrar de você é automático… esquecer? Impossível. Você é presença mesmo quando tá longe. 🫶",
-      leveza_sol: "Cassi, com você até o caos vira comédia. Te ouvir rir é como sol entrando pela janela. ☀️💗"
+      leveza_sol: "Cassi, com você até o caos vira comédia. Te ouvir rir é como sol entrando pela janela. ☀️💗",
+      caminho_suave: "Cassi, tem algo no seu jeito de existir que faz tudo desacelerar. Como se o mundo ficasse mais gentil só por você estar nele. 🌿"
     };
 
     const aleatorios = [
       finais.carinho_presenca,
       finais.lembrada_vista,
-      finais.leveza_sol
+      finais.leveza_sol,
+      finais.caminho_suave
     ];
 
     function showStep(n) {
@@ -231,8 +238,29 @@
     }
 
     function openEnvelope() {
-      envelopeSound.play();
-      messageText.style.display = 'block';
+      const envelope = document.querySelector('.envelope');
+      if (envelope.classList.contains('opened')) return;
+      envelope.classList.add('opened');
+
+      setTimeout(() => {
+        messageText.classList.add('show');
+        launchHeartBurst(envelope.offsetLeft + envelope.offsetWidth / 2);
+      }, 1000);
+    }
+
+    function launchHeartBurst(x) {
+      for (let i = 0; i < 12; i++) {
+        const heart = document.createElement('div');
+        heart.classList.add('heart');
+        heart.innerText = '💖';
+        heart.style.position = 'fixed';
+        heart.style.left = x + (Math.random() * 60 - 30) + 'px';
+        heart.style.bottom = '80px';
+        heart.style.fontSize = (Math.random() * 10 + 16) + 'px';
+        heart.style.animation = 'floatUp 2s ease-out forwards';
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 2000);
+      }
     }
 
     function createFallingHeart() {
